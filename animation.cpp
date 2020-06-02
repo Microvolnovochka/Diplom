@@ -33,8 +33,10 @@ Plane::Plane(int thisX,int thisY) : QGraphicsEllipseItem()
 PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget *parent):QWidget(parent)
      ,ui(new Ui::PlaneController)
 {
+    airplanePL = &airplane;
+    animationPLTimer = &animationTimer;
     ui->setupUi(this);
-    animationTimer.stop();
+    animationPLTimer->stop();
     QVBoxLayout *vbox = new QVBoxLayout (this);
     QHBoxLayout *hbox = new QHBoxLayout ();
     QHBoxLayout *hbox_buttons = new QHBoxLayout ();
@@ -68,7 +70,7 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget 
     connect(angleController, SIGNAL(sliderPressed()),
             this,SLOT(onAngleChanged()));
     connect(accept,SIGNAL(clicked()),
-            this,SLOT(onChangesAccepted(&airplane,&animationTimer)));
+            this,SLOT(onChangesAccepted()));
 }
 
 PlaneController::~PlaneController()
@@ -85,10 +87,10 @@ void Plane::advance(int phase)
 
 }
 
-void PlaneController::onChangesAccepted(Plane &airplane,QTimer &animationTimer)
+void PlaneController::onChangesAccepted()
 {
-    airplane.setAngle(this->angleValue->text().toInt());
-    animationTimer.start(1000/60);
+    this->airplanePL->setAngle(this->angleValue->text().toInt());
+    this->animationPLTimer->start(1000/60);
     this->~PlaneController();
 }
 

@@ -40,7 +40,7 @@ public:
     PlaneController(Plane &airplane,QTimer &animationtimer,QWidget *parent = nullptr);
     ~PlaneController();
 private slots:
-    void onChangesAccepted(Plane &airplane,QTimer &animationTimer);
+    void onChangesAccepted();
     void onAngleChanged();
 private:
     Ui::PlaneController *ui;
@@ -49,6 +49,8 @@ private:
     QPushButton *leftTurn;
     QPushButton *rightTurn;
     QPushButton *accept;
+    Plane *airplanePL;
+    QTimer *animationPLTimer;
 
 };
 
