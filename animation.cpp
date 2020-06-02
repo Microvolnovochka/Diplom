@@ -36,7 +36,6 @@ void Plane::advance(int phase)
 void Animation::mousePressEvent(QMouseEvent *event)
 {
     Plane *airplane = new Plane();
-    int pp;
     planeController = new PlaneController();
     planeController->show();
 }

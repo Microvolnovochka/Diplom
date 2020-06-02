@@ -1,7 +1,5 @@
 #pragma once
 
-#include "animation.h" //understand how to create proper binding
-
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QLabel>
