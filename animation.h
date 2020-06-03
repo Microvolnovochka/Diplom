@@ -1,9 +1,12 @@
 #pragma once
 
+#include <QDebug>
+#include <QtMath>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsPixmapItem>
 #include <QTimer>
 #include <QInputEvent>
 #include <QtWidgets/QWidget>
@@ -16,20 +19,24 @@ namespace Ui {
  class PlaneController;
 }
 
-class Plane : public QGraphicsEllipseItem
+class Plane : public QGraphicsPixmapItem
 {
 public:
     Plane(int thisX,int thisY);
-    void setVSpeed (int vSpeed);
-    void setHSpeed (int hSpeed);
-    void setAngle (int angle);
-    int getVSpeed();
-    int getHSpeed();
-    int getAngle();
+    void setVSpeed (double vSpeed);
+    void setHSpeed (double hSpeed);
+    void setAngle (double angle);
+    double getVSpeed();
+    double getHSpeed();
+    double getAngle();
     // QGraphicsItem interface
     virtual void advance(int phase);
 private:
-    int vSpeed,hSpeed,angle;
+    double vSpeed,hSpeed,angle;
+
+    // QGraphicsItem interface
+protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
 };
 
 class PlaneController : public QWidget
@@ -45,7 +52,9 @@ private slots:
 private:
     Ui::PlaneController *ui;
     QSlider *angleController;
+    QSlider *hSpeedController;
     QLabel *angleValue;
+    QLabel *hSpeedValue;
     QPushButton *leftTurn;
     QPushButton *rightTurn;
     QPushButton *accept;

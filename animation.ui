@@ -16,11 +16,17 @@
   <widget class="QGraphicsView" name="view">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>41</y>
-     <width>291</width>
-     <height>201</height>
+     <x>0</x>
+     <y>1</y>
+     <width>401</width>
+     <height>301</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
   </widget>
  </widget>

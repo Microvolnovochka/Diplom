@@ -10,8 +10,8 @@ Animation::Animation(QWidget *parent):QWidget(parent),
 {
     ui->setupUi(this);
 
-    scene = new QGraphicsScene(0,0,800,600,this);
-    scene->addRect(scene->sceneRect());
+    scene = new QGraphicsScene(this);
+    scene->setSceneRect(scene->itemsBoundingRect());
     ui->view->setScene(scene);
 
     animationTimer = new QTimer(this);
@@ -21,13 +21,13 @@ Animation::Animation(QWidget *parent):QWidget(parent),
     animationTimer->start(1000/60);
 }
 
-Plane::Plane(int thisX,int thisY) : QGraphicsEllipseItem()
+Plane::Plane(int thisX,int thisY) : QGraphicsPixmapItem()
 {
-    setRect(0,0,20,20);
+    setPixmap(QPixmap(":/source/airplane-black.png").scaled(30,40));
     setPos(thisX,thisY);
-    this->angle = 0;
-    this->hSpeed = 0;
-    this->vSpeed = 0;
+    this->angle = 0.0;
+    this->hSpeed = 0.0;
+    this->vSpeed = 0.0;
 }
 
 PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget *parent):QWidget(parent)
@@ -39,6 +39,7 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget 
     animationPLTimer->stop();
     QVBoxLayout *vbox = new QVBoxLayout (this);
     QHBoxLayout *hbox = new QHBoxLayout ();
+    QVBoxLayout *vbox_hSpeed = new QVBoxLayout();
     QHBoxLayout *hbox_buttons = new QHBoxLayout ();
 
 
@@ -59,13 +60,23 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget 
     accept->setEnabled(false);
     hbox_buttons->addWidget(accept,1,Qt::AlignRight);
 
+    hSpeedController = new QSlider (Qt::Vertical, this);
+    hSpeedController->setMaximum(500);
+    vbox_hSpeed->addWidget(hSpeedController);
 
+    hSpeedValue = new QLabel ("0", this);
+    vbox_hSpeed->addWidget(hSpeedValue);
+
+    hbox->addLayout(vbox_hSpeed);
     vbox->addLayout(hbox);
     vbox->addLayout(hbox_buttons);
 
 
     connect(angleController, &QSlider::valueChanged,
             angleValue,static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
+
+    connect(hSpeedController, &QSlider::valueChanged,
+            hSpeedValue,static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
 
     connect(angleController, SIGNAL(sliderPressed()),
             this,SLOT(onAngleChanged()));
@@ -80,16 +91,21 @@ PlaneController::~PlaneController()
 
 void Plane::advance(int phase)
 {
+    double vMovement,hMovement;
+
+    vMovement = (sin(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
+    hMovement = -(cos(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
     if (phase)
     {
-        moveBy(0,5);
+        moveBy(vMovement,hMovement);
     }
 
 }
 
 void PlaneController::onChangesAccepted()
 {
-    this->airplanePL->setAngle(this->angleValue->text().toInt());
+    this->airplanePL->setAngle(this->angleValue->text().toDouble());
+    this->airplanePL->setHSpeed(this->hSpeedValue->text().toDouble());
     this->animationPLTimer->start(1000/60);
     this->~PlaneController();
 }
@@ -98,41 +114,52 @@ void PlaneController::onAngleChanged()
 {
     accept->setEnabled(true);
 }
-void Plane::setAngle(int angle)
+void Plane::setAngle(double angle)
 {
     this->angle = angle;
 }
 
-void Plane::setHSpeed(int hSpeed)
+void Plane::setHSpeed(double hSpeed)
 {
     this->hSpeed = hSpeed;
 }
 
-void Plane::setVSpeed(int vSpeed)
+void Plane::setVSpeed(double vSpeed)
 {
     this->vSpeed = vSpeed;
 }
 
-int Plane::getAngle()
+double Plane::getAngle()
 {
     return this->angle;
 }
 
-int Plane::getHSpeed()
+double Plane::getHSpeed()
 {
     return this->hSpeed;
 }
 
-int Plane::getVSpeed()
+double Plane::getVSpeed()
 {
     return this->vSpeed;
 }
 
 void Animation::mousePressEvent(QMouseEvent *event)
 {
-    Plane *airplane = new Plane(event->x(),event->y());
-    scene->addItem(airplane);
-    planeController = new PlaneController(*airplane,*animationTimer,nullptr);
-    planeController->show();
+    if (event->button() == Qt::LeftButton)
+    {
+        Plane *airplane = new Plane(event->x(),event->y());
+        scene->addItem(airplane);
+        planeController = new PlaneController(*airplane,*animationTimer,nullptr);
+        planeController->show();
+    }
+
 }
 
+
+
+void Plane::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    //PlaneController *planeController = new PlaneController(*this,this->parentObject());
+    //planeController->show();
+}

@@ -31,3 +31,6 @@ HEADERS += \
 FORMS += \
     PlaneController.ui \
     animation.ui
+
+RESOURCES += \
+    img.qrc
