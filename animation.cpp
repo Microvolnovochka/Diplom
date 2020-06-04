@@ -30,9 +30,10 @@ Plane::Plane(int thisX,int thisY) : QGraphicsPixmapItem()
     this->vSpeed = 0.0;
 }
 
-PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget *parent):QWidget(parent)
+PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QGraphicsScene &scene,QWidget *parent):QWidget(parent)
      ,ui(new Ui::PlaneController)
 {
+    scenePL = &scene;
     airplanePL = &airplane;
     animationPLTimer = &animationTimer;
     ui->setupUi(this);
@@ -47,7 +48,8 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget 
     angleController->setMaximum(360);
     hbox->addWidget(angleController);
 
-    angleValue = new QLabel ("0", this);
+    angleValue = new QSpinBox (this);
+    angleValue->setMaximum(360);
     hbox->addWidget(angleValue);
 
     leftTurn = new QPushButton ("L",this);
@@ -72,20 +74,26 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QWidget 
     vbox->addLayout(hbox_buttons);
 
 
-    connect(angleController, &QSlider::valueChanged,
-            angleValue,static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
+    connect(angleController, SIGNAL(valueChanged(int)),
+            angleValue,SLOT(setValue(int)));
+
+    connect(angleValue, SIGNAL(valueChanged(int)),
+            angleController,SLOT(setValue(int)));
 
     connect(hSpeedController, &QSlider::valueChanged,
             hSpeedValue,static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
 
     connect(angleController, SIGNAL(sliderPressed()),
             this,SLOT(onAngleChanged()));
+
     connect(accept,SIGNAL(clicked()),
             this,SLOT(onChangesAccepted()));
 }
 
 PlaneController::~PlaneController()
 {
+    qDebug() <<"DestructorPL";
+    this->animationPLTimer->start(1000/60);
     this->close();
 }
 
@@ -104,9 +112,9 @@ void Plane::advance(int phase)
 
 void PlaneController::onChangesAccepted()
 {
-    this->airplanePL->setAngle(this->angleValue->text().toDouble());
+    this->airplanePL->setAngle(this->angleValue->value());
     this->airplanePL->setHSpeed(this->hSpeedValue->text().toDouble());
-    this->animationPLTimer->start(1000/60);
+    scenePL->addItem(airplanePL);
     this->~PlaneController();
 }
 
@@ -149,8 +157,8 @@ void Animation::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         Plane *airplane = new Plane(event->x(),event->y());
-        scene->addItem(airplane);
-        planeController = new PlaneController(*airplane,*animationTimer,nullptr);
+        //scene->addItem(airplane);
+        planeController = new PlaneController(*airplane,*animationTimer,*scene,nullptr);
         planeController->show();
     }
 
@@ -162,4 +170,18 @@ void Plane::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     //PlaneController *planeController = new PlaneController(*this,this->parentObject());
     //planeController->show();
+}
+
+
+void PlaneController::closeEvent(QCloseEvent *event)
+{
+    qDebug() <<"window_closes";
+    if (this->animationPLTimer->isActive())
+    {
+        return;
+    }
+    else
+    {
+       this->~PlaneController();
+    }
 }

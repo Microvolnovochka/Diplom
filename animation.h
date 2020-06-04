@@ -11,6 +11,7 @@
 #include <QInputEvent>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 
@@ -44,7 +45,7 @@ class PlaneController : public QWidget
     Q_OBJECT
 
 public:
-    PlaneController(Plane &airplane,QTimer &animationtimer,QWidget *parent = nullptr);
+    PlaneController(Plane &airplane,QTimer &animationtimer,QGraphicsScene &scene,QWidget *parent = nullptr);
     ~PlaneController();
 private slots:
     void onChangesAccepted();
@@ -53,14 +54,19 @@ private:
     Ui::PlaneController *ui;
     QSlider *angleController;
     QSlider *hSpeedController;
-    QLabel *angleValue;
+    QSpinBox *angleValue;
     QLabel *hSpeedValue;
     QPushButton *leftTurn;
     QPushButton *rightTurn;
     QPushButton *accept;
+    QGraphicsScene *scenePL;
     Plane *airplanePL;
     QTimer *animationPLTimer;
 
+
+    // QWidget interface
+protected:
+   virtual void closeEvent(QCloseEvent *event);
 };
 
 class Animation : public QWidget
@@ -78,6 +84,8 @@ private:
     // QWidget interface
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
+
+    // QWidget interface
 };
 
 
