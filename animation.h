@@ -20,20 +20,22 @@ namespace Ui {
  class PlaneController;
 }
 
-class Plane : public QGraphicsPixmapItem
+class Plane : public QGraphicsEllipseItem
 {
 public:
     Plane(int thisX,int thisY);
     void setVSpeed (double vSpeed);
     void setHSpeed (double hSpeed);
     void setAngle (double angle);
+    void setSelAngle (double selAngle);
     double getVSpeed();
     double getHSpeed();
     double getAngle();
+    double getSelectedAngle();
     // QGraphicsItem interface
     virtual void advance(int phase);
 private:
-    double vSpeed,hSpeed,angle;
+    double vSpeed,hSpeed,angle,selectedAngle;
 
     // QGraphicsItem interface
 protected:
@@ -49,7 +51,7 @@ public:
     ~PlaneController();
 private slots:
     void onChangesAccepted();
-    void onAngleChanged();
+    void onHSpeedChanged();
 private:
     Ui::PlaneController *ui;
     QSlider *angleController;

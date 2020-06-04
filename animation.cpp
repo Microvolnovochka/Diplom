@@ -21,9 +21,9 @@ Animation::Animation(QWidget *parent):QWidget(parent),
     animationTimer->start(1000/60);
 }
 
-Plane::Plane(int thisX,int thisY) : QGraphicsPixmapItem()
+Plane::Plane(int thisX,int thisY) : QGraphicsEllipseItem()
 {
-    setPixmap(QPixmap(":/source/airplane-black.png").scaled(30,40));
+    setRect(0,0,20,20);
     setPos(thisX,thisY);
     this->angle = 0.0;
     this->hSpeed = 0.0;
@@ -83,8 +83,8 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QGraphic
     connect(hSpeedController, &QSlider::valueChanged,
             hSpeedValue,static_cast<void (QLabel::*)(int)>(&QLabel::setNum));
 
-    connect(angleController, SIGNAL(sliderPressed()),
-            this,SLOT(onAngleChanged()));
+    connect(hSpeedController, SIGNAL(sliderPressed()),
+            this,SLOT(onHSpeedChanged()));
 
     connect(accept,SIGNAL(clicked()),
             this,SLOT(onChangesAccepted()));
@@ -101,10 +101,25 @@ void Plane::advance(int phase)
 {
     double vMovement,hMovement;
 
-    vMovement = (sin(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
-    hMovement = -(cos(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
     if (phase)
     {
+        if (abs(this->getAngle()-this->getSelectedAngle())>=0.99)
+        {
+            if (((this->getAngle()+180)>=this->getSelectedAngle()&&this->getSelectedAngle()>this->getAngle())||(((this->getAngle()-180)>=getSelectedAngle()&&getSelectedAngle()>(this->getAngle()-360))))
+            {
+                this->setAngle(this->getAngle()+(3/60));
+            }
+            else
+            {
+                this->setAngle(this->getAngle()-(3/60));
+            }
+        }
+        else
+        {
+            this->setAngle(this->getSelectedAngle());
+        }
+        vMovement = (sin(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
+        hMovement = -(cos(qDegreesToRadians(this->getAngle())))*this->getHSpeed()/100;
         moveBy(vMovement,hMovement);
     }
 
@@ -112,19 +127,25 @@ void Plane::advance(int phase)
 
 void PlaneController::onChangesAccepted()
 {
-    this->airplanePL->setAngle(this->angleValue->value());
+    this->airplanePL->setSelAngle(this->angleValue->value());
     this->airplanePL->setHSpeed(this->hSpeedValue->text().toDouble());
     scenePL->addItem(airplanePL);
     this->~PlaneController();
 }
 
-void PlaneController::onAngleChanged()
+void PlaneController::onHSpeedChanged()
 {
     accept->setEnabled(true);
 }
+
 void Plane::setAngle(double angle)
 {
     this->angle = angle;
+}
+
+void Plane::setSelAngle(double selAngle)
+{
+    this->selectedAngle = selAngle;
 }
 
 void Plane::setHSpeed(double hSpeed)
@@ -140,6 +161,11 @@ void Plane::setVSpeed(double vSpeed)
 double Plane::getAngle()
 {
     return this->angle;
+}
+
+double Plane::getSelectedAngle()
+{
+    return this->selectedAngle;
 }
 
 double Plane::getHSpeed()
