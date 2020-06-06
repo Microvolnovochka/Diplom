@@ -107,11 +107,11 @@ void Plane::advance(int phase)
         {
             if (((this->getAngle()+180)>=this->getSelectedAngle()&&this->getSelectedAngle()>this->getAngle())||(((this->getAngle()-180)>=getSelectedAngle()&&getSelectedAngle()>(this->getAngle()-360))))
             {
-                this->setAngle(this->getAngle()+(3/60));
+                this->setAngle(this->getAngle()+(0.05));
             }
             else
             {
-                this->setAngle(this->getAngle()-(3/60));
+                this->setAngle(this->getAngle()-(0.05));
             }
         }
         else
