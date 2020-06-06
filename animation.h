@@ -14,16 +14,18 @@
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
 
 namespace Ui {
  class Animation;
+ class Plane;
  class PlaneController;
 }
 
-class Plane : public QGraphicsEllipseItem
+class PlaneCircle : public QGraphicsEllipseItem
 {
 public:
-    Plane(int thisX,int thisY);
+    PlaneCircle(int thisX,int thisY);
     void setVSpeed (double vSpeed);
     void setHSpeed (double hSpeed);
     void setAngle (double angle);
@@ -42,12 +44,14 @@ protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
 };
 
+
+
 class PlaneController : public QWidget
 {
     Q_OBJECT
 
 public:
-    PlaneController(Plane &airplane,QTimer &animationtimer,QGraphicsScene &scene,QWidget *parent = nullptr);
+    PlaneController(PlaneCircle &airplane,QWidget *parent = nullptr);
     ~PlaneController();
 private slots:
     void onChangesAccepted();
@@ -61,14 +65,25 @@ private:
     QPushButton *leftTurn;
     QPushButton *rightTurn;
     QPushButton *accept;
-    QGraphicsScene *scenePL;
-    Plane *airplanePL;
-    QTimer *animationPLTimer;
+    PlaneCircle *airplanePL;
 
 
     // QWidget interface
 protected:
-   virtual void closeEvent(QCloseEvent *event);
+};
+
+class Plane : public QWidget
+{
+    Q_OBJECT
+
+public:
+    Plane(QVBoxLayout &vbox, QGraphicsScene &scene,bool nplanes);
+private slots:
+    void onPlaneInfo();
+private:
+    QPushButton *planeInfo;
+    PlaneCircle *airplane;
+    PlaneController *planecontroller;
 };
 
 class Animation : public QWidget
@@ -81,11 +96,15 @@ private:
     Ui::Animation *ui;
     QGraphicsScene *scene;
     QTimer *animationTimer;
-    PlaneController *planeController;
-
+    QPushButton *addNPlanes;
+    QPushButton * addPlane;
+    QVBoxLayout *vbox_animation;
+    Plane *plane;
+private slots:
+    void onAddPlane();
+    void onAddNPlanes();
     // QWidget interface
 protected:
-    virtual void mousePressEvent(QMouseEvent *event);
 
     // QWidget interface
 };

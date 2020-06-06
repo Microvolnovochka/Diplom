@@ -1,5 +1,5 @@
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
+
 
 #include "animation.h"
 #include "ui_Animation.h"
@@ -10,18 +10,75 @@ Animation::Animation(QWidget *parent):QWidget(parent),
 {
     ui->setupUi(this);
 
+    QHBoxLayout *hbox_animation = new QHBoxLayout (this);
+    vbox_animation = new QVBoxLayout();
+
+    addNPlanes = new QPushButton("Add_N_Plane",this);
+    vbox_animation->addWidget(addNPlanes);
+
+    addPlane = new QPushButton("Add_Plane",this);
+    vbox_animation->addWidget(addPlane);
+
     scene = new QGraphicsScene(this);
     scene->setSceneRect(scene->itemsBoundingRect());
     ui->view->setScene(scene);
 
+    hbox_animation->addLayout(vbox_animation);
+    hbox_animation->addWidget(ui->view);
+
     animationTimer = new QTimer(this);
+
+    connect(addNPlanes,SIGNAL(clicked()),
+            this,SLOT(onAddNPlanes()));
+
+    connect(addPlane,SIGNAL(clicked()),
+            this,SLOT(onAddPlane()));
+
     connect(animationTimer,SIGNAL(timeout()),
             scene,SLOT(advance()));
 
     animationTimer->start(1000/60);
 }
 
-Plane::Plane(int thisX,int thisY) : QGraphicsEllipseItem()
+void Animation::onAddPlane()
+{
+    plane = new Plane(*(this->vbox_animation),*scene,false);
+}
+
+void Animation::onAddNPlanes()
+{
+    for (int i =0; i<1000; i++)
+    {
+       plane = new Plane(*(this->vbox_animation),*scene,true);
+    }
+}
+Plane::Plane(QVBoxLayout &vbox, QGraphicsScene &scene,bool nplanes)
+{
+        airplane = new PlaneCircle (10,10);
+        planeInfo = new QPushButton("Plane",this);
+        scene.addItem(airplane);
+        vbox.addWidget(planeInfo);
+        if (!nplanes)
+        {
+            planecontroller = new PlaneController(*airplane,nullptr);
+            planecontroller->show();
+        }
+        else
+        {
+            airplane->setAngle(45.0);
+            airplane->setHSpeed(1.0);
+        }
+        connect(planeInfo,SIGNAL(clicked()),
+                this,SLOT(onPlaneInfo()));
+}
+
+void Plane::onPlaneInfo()
+{
+    planecontroller = new PlaneController(*airplane,nullptr);
+    planecontroller->show();
+}
+
+PlaneCircle::PlaneCircle(int thisX,int thisY) : QGraphicsEllipseItem()
 {
     setRect(0,0,20,20);
     setPos(thisX,thisY);
@@ -30,14 +87,11 @@ Plane::Plane(int thisX,int thisY) : QGraphicsEllipseItem()
     this->vSpeed = 0.0;
 }
 
-PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QGraphicsScene &scene,QWidget *parent):QWidget(parent)
+PlaneController::PlaneController(PlaneCircle &airplane,QWidget *parent):QWidget(parent)
      ,ui(new Ui::PlaneController)
 {
-    scenePL = &scene;
     airplanePL = &airplane;
-    animationPLTimer = &animationTimer;
     ui->setupUi(this);
-    animationPLTimer->stop();
     QVBoxLayout *vbox = new QVBoxLayout (this);
     QHBoxLayout *hbox = new QHBoxLayout ();
     QVBoxLayout *vbox_hSpeed = new QVBoxLayout();
@@ -93,11 +147,10 @@ PlaneController::PlaneController(Plane &airplane,QTimer &animationTimer,QGraphic
 PlaneController::~PlaneController()
 {
     qDebug() <<"DestructorPL";
-    this->animationPLTimer->start(1000/60);
     this->close();
 }
 
-void Plane::advance(int phase)
+void PlaneCircle::advance(int phase)
 {
     double vMovement,hMovement;
 
@@ -129,7 +182,6 @@ void PlaneController::onChangesAccepted()
 {
     this->airplanePL->setSelAngle(this->angleValue->value());
     this->airplanePL->setHSpeed(this->hSpeedValue->text().toDouble());
-    scenePL->addItem(airplanePL);
     this->~PlaneController();
 }
 
@@ -138,76 +190,49 @@ void PlaneController::onHSpeedChanged()
     accept->setEnabled(true);
 }
 
-void Plane::setAngle(double angle)
+void PlaneCircle::setAngle(double angle)
 {
     this->angle = angle;
 }
 
-void Plane::setSelAngle(double selAngle)
+void PlaneCircle::setSelAngle(double selAngle)
 {
     this->selectedAngle = selAngle;
 }
 
-void Plane::setHSpeed(double hSpeed)
+void PlaneCircle::setHSpeed(double hSpeed)
 {
     this->hSpeed = hSpeed;
 }
 
-void Plane::setVSpeed(double vSpeed)
+void PlaneCircle::setVSpeed(double vSpeed)
 {
     this->vSpeed = vSpeed;
 }
 
-double Plane::getAngle()
+double PlaneCircle::getAngle()
 {
     return this->angle;
 }
 
-double Plane::getSelectedAngle()
+double PlaneCircle::getSelectedAngle()
 {
     return this->selectedAngle;
 }
 
-double Plane::getHSpeed()
+double PlaneCircle::getHSpeed()
 {
     return this->hSpeed;
 }
 
-double Plane::getVSpeed()
+double PlaneCircle::getVSpeed()
 {
     return this->vSpeed;
 }
 
-void Animation::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        Plane *airplane = new Plane(event->x(),event->y());
-        //scene->addItem(airplane);
-        planeController = new PlaneController(*airplane,*animationTimer,*scene,nullptr);
-        planeController->show();
-    }
-
-}
-
-
-
-void Plane::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void PlaneCircle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     //PlaneController *planeController = new PlaneController(*this,this->parentObject());
     //planeController->show();
 }
 
-
-void PlaneController::closeEvent(QCloseEvent *event)
-{
-    qDebug() <<"window_closes";
-    if (this->animationPLTimer->isActive())
-    {
-        return;
-    }
-    else
-    {
-       this->~PlaneController();
-    }
-}

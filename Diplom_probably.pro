@@ -18,7 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         animation.cpp \
-        main.cpp
+        main.cpp \
+        mainwindow.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -26,11 +27,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    animation.h
+    animation.h \
+    mainwindow.h
 
 FORMS += \
     PlaneController.ui \
-    animation.ui
+    animation.ui \
+    mainwindow.ui
 
 RESOURCES += \
     img.qrc
